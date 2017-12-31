@@ -6,4 +6,5 @@ data class Contact(val waVoiceCallId: Long,
                    val waVideoCallId: Long,
                    val name: String,
                    val number: String,
-                   val photo: Uri?)
+                   val photo: Uri?,
+                   val photoUrl: String?)

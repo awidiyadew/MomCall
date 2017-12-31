@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingTop="70dp"
-            android:paddingBottom="16dp"
+            android:paddingBottom="102dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:clipToPadding="false"
@@ -37,8 +37,7 @@
             app:stackFrom="top"
             app:elevationEnabled="true"
             app:swipeEnabled="true"
-            app:swipeDirection="freedom_no_bottom"
-            android:layout_above="@id/control"/>
+            app:swipeDirection="freedom_no_bottom" />
 
         <LinearLayout
             android:id="@+id/control"
@@ -55,9 +54,11 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
                 <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_call_phone"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
                     android:layout_gravity="center"
+                    android:clickable="true"
                     android:src="@drawable/ic_phone_call"/>
             </FrameLayout>
 
@@ -67,10 +68,12 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
                 <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_voice_call"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:backgroundTint="#10c72c"
+                    app:backgroundTint="#10c72c"
                     android:src="@drawable/ic_voice_call"
+                    android:clickable="true"
                     android:layout_gravity="center"/>
             </FrameLayout>
 
@@ -80,10 +83,12 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
                 <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_video_call"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
                     android:layout_gravity="center"
-                    android:backgroundTint="#1595df"
+                    android:clickable="true"
+                    app:backgroundTint="#1595df"
                     android:src="@drawable/ic_video_call"
                      />
             </FrameLayout>

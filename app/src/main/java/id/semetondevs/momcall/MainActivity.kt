@@ -27,11 +27,25 @@ class MainActivity : AppCompatActivity() {
 
     private val listContact: List<Contact> by lazy { getContacts() }
     private val cardStackAdapter: ContactAdapter by lazy { ContactAdapter(this) }
+    private var selectedContact: Contact? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupCardStack(card_stack_view)
+
+        selectedContact = listContact[card_stack_view.topIndex]
+        btn_voice_call.setOnClickListener { _ ->
+            if (selectedContact != null) {
+                doVoiceCall(selectedContact?.waVoiceCallId?:0)
+            }
+        }
+
+        btn_video_call.setOnClickListener { _ ->
+            if (selectedContact != null) {
+                doVideoCall(selectedContact?.waVoiceCallId?:0)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -71,9 +85,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun getContacts(): List<Contact> {
         return Arrays.asList(
-                Contact(3305, 3306, "Made", "085737546945", null),
-                Contact(1, 1, "Gede", "085737546945", null),
-                Contact(1, 2, "Komang", "085737546945", null))
+                Contact(3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"),
+                Contact(1, 1, "Gede Mancung", "085737546xxx", null, "http://picsum.photos/450/650/?image=1027"),
+                Contact(1, 2, "Komang Ganteng", "085737546xxx", null, "http://picsum.photos/450/650/?image=1005"),
+                Contact(1, 2, "Ketut Gaul", "085737546xxx", null, "http://picsum.photos/450/650/?image=1010"),
+                Contact(1, 2, "Wayan Mabuk", "085737546xxx", null, "http://picsum.photos/450/650/?image=1025"),
+                Contact(1, 2, "Kadek Manis", "085737546xxx", null, "http://picsum.photos/450/650/?image=996"))
     }
 
     private fun setupCardStack(card: CardStackView) {
@@ -88,12 +105,16 @@ class MainActivity : AppCompatActivity() {
 
             override fun onCardSwiped(direction: SwipeDirection?) {
                 Log.d(TAG, "onCardSwiped top index ${card.topIndex}")
+
+                var selectedIdx = if (card.topIndex == listContact.size) 0 else card.topIndex
+                selectedContact = listContact[selectedIdx]
+
                 if (card.topIndex == listContact.size) {
                     card.visibility = View.GONE
                     Handler().postDelayed(Runnable {
                         card.setAdapter(cardStackAdapter)
                         card.visibility = View.VISIBLE
-                    }, 100)
+                    }, 50)
                 }
             }
 
@@ -117,11 +138,23 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(contactPickerIntent, RC_SELECT_CONTACT)
     }
 
-    private fun doVoiceCall() {
+    private fun doVoiceCall(id: Long) {
+        if (id <= 0) return
         val intentCall = Intent()
         intentCall.action = Intent.ACTION_VIEW
         intentCall.setDataAndType(Uri.parse(
-                "content://com.android.contacts/data/3306"),
+                "content://com.android.contacts/data/$id"),
+                "vnd.android.cursor.item/vnd.com.whatsapp.voip.call")
+        intentCall.`package` = "com.whatsapp"
+        startActivity(intentCall)
+    }
+
+    private fun doVideoCall(id: Long) {
+        if (id <= 0) return
+        val intentCall = Intent()
+        intentCall.action = Intent.ACTION_VIEW
+        intentCall.setDataAndType(Uri.parse(
+                "content://com.android.contacts/data/$id"),
                 "vnd.android.cursor.item/vnd.com.whatsapp.video.call")
         intentCall.`package` = "com.whatsapp"
         startActivity(intentCall)
