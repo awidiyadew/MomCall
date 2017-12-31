@@ -7,39 +7,26 @@
     android:background="@color/colorPrimary"
     tools:context="id.semetondevs.momcall.MainActivity">
 
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <android.support.v7.widget.RecyclerView
-            android:visibility="gone"
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="none" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_setting"
+            android:layout_margin="16dp"/>
 
         <com.yuyakaido.android.cardstackview.CardStackView
             android:id="@+id/card_stack_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="32dp"
-            android:paddingBottom="32dp"
+            android:paddingTop="70dp"
+            android:paddingBottom="16dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:clipToPadding="false"
@@ -50,8 +37,59 @@
             app:stackFrom="top"
             app:elevationEnabled="true"
             app:swipeEnabled="true"
-            app:swipeDirection="freedom_no_bottom" />
+            app:swipeDirection="freedom_no_bottom"
+            android:layout_above="@id/control"/>
 
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/control"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_marginBottom="16dp">
+
+            <!-- konvensional call -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_phone_call"/>
+            </FrameLayout>
+
+            <!-- whatsapp voice -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:backgroundTint="#10c72c"
+                    android:src="@drawable/ic_voice_call"
+                    android:layout_gravity="center"/>
+            </FrameLayout>
+
+            <!-- whatsapp video -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:backgroundTint="#1595df"
+                    android:src="@drawable/ic_video_call"
+                     />
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
