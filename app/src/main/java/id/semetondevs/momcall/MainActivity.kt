@@ -24,14 +24,6 @@ import com.yuyakaido.android.cardstackview.SwipeDirection
 import id.semetondevs.momcall.database.Contact
 import id.semetondevs.momcall.database.ContactDatabase
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
-
-
-private val s: String
-    get() {
-        val mimeTypeVideo = "vnd.android.cursor.item/vnd.com.whatsapp.video.call"
-        return mimeTypeVideo
-    }
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,9 +32,14 @@ class MainActivity : AppCompatActivity() {
         private val RC_SELECT_CONTACT = 1
     }
 
-    private val listContact: List<Contact> by lazy { getContacts() }
     private val cardStackAdapter: ContactAdapter by lazy { ContactAdapter(this) }
     private var selectedContact: Contact? = null
+    val contactDb: ContactDatabase by lazy {
+        Room.databaseBuilder(this, ContactDatabase::class.java, "contact_db")
+            .allowMainThreadQueries()
+            .build()
+    }
+    private val listContact: List<Contact> by lazy { getContacts(contactDb) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,11 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDb() {
-        val contactDb = Room.databaseBuilder(this, ContactDatabase::class.java, "contact_db")
-                .allowMainThreadQueries()
-                .build()
-
+    private fun setupDb(contactDb: ContactDatabase) {
         contactDb.contactDao()
                 .saveContact(Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
 
@@ -131,14 +124,18 @@ class MainActivity : AppCompatActivity() {
                 .forEach { Log.d(TAG, "got contact $it") }
     }
 
-    private fun getContacts(): List<Contact> {
-        return Arrays.asList(
+    private fun getContacts(contactDb: ContactDatabase): List<Contact> {
+        /*return Arrays.asList(
                 Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"),
                 Contact(2, 1, 1, "Gede Mancung", "085737546xxx", null, "http://picsum.photos/450/650/?image=1027"),
                 Contact(3, 1, 2, "Komang Ganteng", "085737546xxx", null, "http://picsum.photos/450/650/?image=1005"),
                 Contact(4, 1, 2, "Ketut Gaul", "085737546xxx", null, "http://picsum.photos/450/650/?image=1010"),
                 Contact(5, 1, 2, "Wayan Mabuk", "085737546xxx", null, "http://picsum.photos/450/650/?image=1025"),
-                Contact(6, 1, 2, "Kadek Manis", "085737546xxx", null, "http://picsum.photos/450/650/?image=996"))
+                Contact(6, 1, 2, "Kadek Manis", "085737546xxx", null, "http://picsum.photos/450/650/?image=996"))*/
+        contactDb.contactDao()
+                .saveContact(Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
+
+        return contactDb.contactDao().getAllContact()
     }
 
     private fun setupCardStack(card: CardStackView) {
