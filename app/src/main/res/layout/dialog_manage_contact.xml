@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:attr/dialogLayout"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    android:background="#fff">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="250dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:src="@color/colorAccent"/>
+
+        <EditText
+            android:id="@+id/dialog_contact_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:inputType="textCapSentences|textPersonName"
+            android:hint="Contact Name"/>
+
+        <EditText
+            android:id="@+id/dialog_contact_num"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:inputType="phone"
+            android:hint="Contact Number"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/dialog_btn_negative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="64dp"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:padding="8dp"
+            android:layout_marginRight="8dp"
+            android:text="Cancel" />
+
+        <Button
+            android:id="@+id/dialog_btn_positive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="64dp"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/colorAccent"
+            android:padding="8dp"
+            android:text="Save" />
+
+    </LinearLayout>
+
+</LinearLayout>

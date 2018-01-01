@@ -39,14 +39,16 @@ class MainActivity : AppCompatActivity() {
             .allowMainThreadQueries()
             .build()
     }
-    private val listContact: List<Contact> by lazy { getContacts(contactDb) }
+    private var listContact: List<Contact>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setupCardStack(card_stack_view)
 
-        selectedContact = listContact[card_stack_view.topIndex]
+        if (listContact == null) listContact = getContacts(contactDb)
+        setupCardStack(card_stack_view)
+        setSelectedContact(listContact, card_stack_view.topIndex)
+
         btn_voice_call.setOnClickListener { _ ->
             if (selectedContact != null) {
                 doVoiceCall(selectedContact?.voiceCallId ?: 0)
@@ -98,7 +100,7 @@ class MainActivity : AppCompatActivity() {
             if (findWhatsAppContact == null) {
                 Toast.makeText(this, "contact has no whatsapp account", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, name, Toast.LENGTH_SHORT).show()
+                showManageContactDialog(findWhatsAppContact)
             }
         } else {
             Toast.makeText(this, "Failed to select contact", Toast.LENGTH_SHORT).show()
@@ -113,6 +115,32 @@ class MainActivity : AppCompatActivity() {
                 requestContactPermission()
             }
         }
+    }
+
+    private fun showManageContactDialog(contact: Contact) {
+        val dialog = ManageContactDialogFragment.newInstance(contact)
+        dialog.setManageContactListener(object : ManageContactDialogFragment.ManageContactListener{
+            override fun onInputValid(contact: Contact) {
+                contactDb.contactDao()
+                        .saveContact(contact)
+                resetContactStack(card_stack_view, true)
+                Toast.makeText(this@MainActivity, "Save success!", Toast.LENGTH_SHORT).show()
+            }
+        })
+        dialog.show(supportFragmentManager, "ManageContactDialogFragment")
+    }
+
+    private fun setSelectedContact(listContact: List<Contact>?, currentPos: Int) {
+        if (listContact?.isEmpty() != false) {
+            showNoContact()
+            return
+        }
+
+        selectedContact = listContact[currentPos]
+    }
+
+    private fun showNoContact() {
+        Toast.makeText(this, "no contact found", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupDb(contactDb: ContactDatabase) {
@@ -132,10 +160,23 @@ class MainActivity : AppCompatActivity() {
                 Contact(4, 1, 2, "Ketut Gaul", "085737546xxx", null, "http://picsum.photos/450/650/?image=1010"),
                 Contact(5, 1, 2, "Wayan Mabuk", "085737546xxx", null, "http://picsum.photos/450/650/?image=1025"),
                 Contact(6, 1, 2, "Kadek Manis", "085737546xxx", null, "http://picsum.photos/450/650/?image=996"))*/
-        contactDb.contactDao()
-                .saveContact(Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
-
         return contactDb.contactDao().getAllContact()
+    }
+
+    private fun resetContactStack(card: CardStackView, reloadData: Boolean) {
+        card.visibility = View.GONE
+
+        if (reloadData) {
+            listContact = getContacts(contactDb)
+            cardStackAdapter.clear()
+            cardStackAdapter.addAll(listContact)
+        }
+
+        Handler().postDelayed(Runnable {
+            card.setAdapter(cardStackAdapter)
+            cardStackAdapter.notifyDataSetChanged()
+            card.visibility = View.VISIBLE
+        }, 50)
     }
 
     private fun setupCardStack(card: CardStackView) {
@@ -151,15 +192,11 @@ class MainActivity : AppCompatActivity() {
             override fun onCardSwiped(direction: SwipeDirection?) {
                 Log.d(TAG, "onCardSwiped top index ${card.topIndex}")
 
-                var selectedIdx = if (card.topIndex == listContact.size) 0 else card.topIndex
-                selectedContact = listContact[selectedIdx]
+                val selectedIdx = if (card.topIndex == listContact?.size) 0 else card.topIndex
+                setSelectedContact(listContact, selectedIdx)
 
-                if (card.topIndex == listContact.size) {
-                    card.visibility = View.GONE
-                    Handler().postDelayed(Runnable {
-                        card.setAdapter(cardStackAdapter)
-                        card.visibility = View.VISIBLE
-                    }, 50)
+                if (card.topIndex == listContact?.size) {
+                    resetContactStack(card, false)
                 }
             }
 
@@ -173,7 +210,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onCardClicked(index: Int) {
                 Log.d(TAG, "onCardClicked pos = $index")
-                Toast.makeText(this@MainActivity, listContact[index].name, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, listContact!![index].name, Toast.LENGTH_SHORT).show()
             }
         })
     }
