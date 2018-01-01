@@ -1,12 +1,18 @@
 package id.semetondevs.momcall
 
+import android.Manifest
 import android.app.Activity
 import android.arch.persistence.room.Room
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.ContactsContract
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
@@ -40,14 +46,18 @@ class MainActivity : AppCompatActivity() {
         selectedContact = listContact[card_stack_view.topIndex]
         btn_voice_call.setOnClickListener { _ ->
             if (selectedContact != null) {
-                doVoiceCall(selectedContact?.voiceCallId ?:0)
+                doVoiceCall(selectedContact?.voiceCallId ?: 0)
             }
         }
 
         btn_video_call.setOnClickListener { _ ->
             if (selectedContact != null) {
-                doVideoCall(selectedContact?.voiceCallId ?:0)
+                doVideoCall(selectedContact?.voiceCallId ?: 0)
             }
+        }
+
+        btn_setting.setOnClickListener { _ ->
+            selectContact()
         }
 
     }
@@ -82,8 +92,19 @@ class MainActivity : AppCompatActivity() {
             cursor.close()
 
             Log.d(TAG, "got it! $name -> $phoneNo")
+            Toast.makeText(this, name, Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Failed to select contact", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == RC_SELECT_CONTACT) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                selectContact()
+            } else {
+                requestContactPermission()
+            }
         }
     }
 
@@ -93,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         contactDb.contactDao()
-                .saveContact(Contact(1,3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
+                .saveContact(Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
 
         contactDb.contactDao()
                 .getAllContact()
@@ -102,8 +123,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun getContacts(): List<Contact> {
         return Arrays.asList(
-                Contact(1,3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"),
-                Contact(2,1, 1, "Gede Mancung", "085737546xxx", null, "http://picsum.photos/450/650/?image=1027"),
+                Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"),
+                Contact(2, 1, 1, "Gede Mancung", "085737546xxx", null, "http://picsum.photos/450/650/?image=1027"),
                 Contact(3, 1, 2, "Komang Ganteng", "085737546xxx", null, "http://picsum.photos/450/650/?image=1005"),
                 Contact(4, 1, 2, "Ketut Gaul", "085737546xxx", null, "http://picsum.photos/450/650/?image=1010"),
                 Contact(5, 1, 2, "Wayan Mabuk", "085737546xxx", null, "http://picsum.photos/450/650/?image=1025"),
@@ -115,7 +136,7 @@ class MainActivity : AppCompatActivity() {
         cardStackAdapter.addAll(listContact)
         cardStackAdapter.notifyDataSetChanged()
 
-        card.setCardEventListener(object: CardStackView.CardEventListener{
+        card.setCardEventListener(object : CardStackView.CardEventListener {
             override fun onCardDragging(percentX: Float, percentY: Float) {
                 Log.d(TAG, "onCardDragging")
             }
@@ -151,8 +172,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectContact() {
-        val contactPickerIntent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
-        startActivityForResult(contactPickerIntent, RC_SELECT_CONTACT)
+        if (!hasContactPermission()) {
+            requestContactPermission()
+        } else {
+            val contactPickerIntent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+            startActivityForResult(contactPickerIntent, RC_SELECT_CONTACT)
+        }
+    }
+
+    private fun hasContactPermission(): Boolean = !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED)
+
+    private fun requestContactPermission() {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {*/
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+                    val builder = AlertDialog.Builder(this@MainActivity)
+                    builder.setTitle("Need Contact Permission")
+                    builder.setMessage("This app needs contact permission.")
+                    builder.setPositiveButton("Grant", { dialog, _ ->
+                        dialog.cancel()
+                        ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
+                    })
+                    builder.setNegativeButton("Cancel", { dialog, _ -> dialog.cancel() })
+                    builder.show()
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
+                }
+         /*   }
+        }*/
     }
 
     private fun doVoiceCall(id: Long) {
