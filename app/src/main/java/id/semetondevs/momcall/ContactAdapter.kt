@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import id.semetondevs.momcall.database.Contact
 
 
 class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
