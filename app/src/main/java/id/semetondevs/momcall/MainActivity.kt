@@ -27,6 +27,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 
+private val s: String
+    get() {
+        val mimeTypeVideo = "vnd.android.cursor.item/vnd.com.whatsapp.video.call"
+        return mimeTypeVideo
+    }
+
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -91,8 +97,12 @@ class MainActivity : AppCompatActivity() {
             val name = cursor.getString(nameIndex)
             cursor.close()
 
-            Log.d(TAG, "got it! $name -> $phoneNo")
-            Toast.makeText(this, name, Toast.LENGTH_SHORT).show()
+            val findWhatsAppContact = findWhatsAppContact(phoneNo, name)
+            if (findWhatsAppContact == null) {
+                Toast.makeText(this, "contact has no whatsapp account", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, name, Toast.LENGTH_SHORT).show()
+            }
         } else {
             Toast.makeText(this, "Failed to select contact", Toast.LENGTH_SHORT).show()
         }
@@ -184,23 +194,19 @@ class MainActivity : AppCompatActivity() {
             && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED)
 
     private fun requestContactPermission() {
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {*/
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
-                    val builder = AlertDialog.Builder(this@MainActivity)
-                    builder.setTitle("Need Contact Permission")
-                    builder.setMessage("This app needs contact permission.")
-                    builder.setPositiveButton("Grant", { dialog, _ ->
-                        dialog.cancel()
-                        ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
-                    })
-                    builder.setNegativeButton("Cancel", { dialog, _ -> dialog.cancel() })
-                    builder.show()
-                } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
-                }
-         /*   }
-        }*/
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+            val builder = AlertDialog.Builder(this@MainActivity)
+            builder.setTitle("Need Contact Permission")
+            builder.setMessage("This app needs contact permission.")
+            builder.setPositiveButton("Grant", { dialog, _ ->
+                dialog.cancel()
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
+            })
+            builder.setNegativeButton("Cancel", { dialog, _ -> dialog.cancel() })
+            builder.show()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), RC_SELECT_CONTACT)
+        }
     }
 
     private fun doVoiceCall(id: Long) {
@@ -225,20 +231,34 @@ class MainActivity : AppCompatActivity() {
         startActivity(intentCall)
     }
 
-    private fun scanContact() {
-        val contentResolver = this.contentResolver
-        val cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI,
-                null, null, null,
-                ContactsContract.Contacts.DISPLAY_NAME)
+    private fun findWhatsAppContact(contactNumber: String, displayName: String): Contact? {
+        val mimeTypeVoice = "vnd.android.cursor.item/vnd.com.whatsapp.voip.call"
+        val mimeTypeVideo = "vnd.android.cursor.item/vnd.com.whatsapp.video.call"
+        val selection = "((${ContactsContract.Data.MIMETYPE} =? OR ${ContactsContract.Data.MIMETYPE} =?) AND ${ContactsContract.Data.DISPLAY_NAME} =?)"
+        val args = arrayOf(mimeTypeVideo, mimeTypeVoice, displayName)
+        val cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI, null, selection, args, ContactsContract.Contacts.DISPLAY_NAME)
 
+        var contact: Contact? = null
         while (cursor.moveToNext()) {
             val id = cursor.getLong(cursor.getColumnIndex(ContactsContract.Data._ID))
-            val displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME))
+            val contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME))
             val mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE))
-            Log.d("MainActivity", "$displayName | $id | $mimeType")
+
+            if (contact == null) contact = Contact()
+            contact.name = contactName
+            contact.number = contactNumber
+            if (mimeType == mimeTypeVideo) {
+                contact.videoCallId = id
+            } else {
+                contact.voiceCallId = id
+            }
+
+            Log.d(TAG, contact.toString())
         }
 
         cursor.close()
+
+        return contact
     }
 
 }
