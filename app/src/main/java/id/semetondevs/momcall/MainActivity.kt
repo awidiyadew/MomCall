@@ -49,21 +49,19 @@ class MainActivity : AppCompatActivity() {
         setupCardStack(card_stack_view)
         setSelectedContact(listContact, card_stack_view.topIndex)
 
-        btn_voice_call.setOnClickListener { _ ->
+        btn_voice_call.setOnClickListener {
             if (selectedContact != null) {
                 doVoiceCall(selectedContact?.voiceCallId ?: 0)
             }
         }
 
-        btn_video_call.setOnClickListener { _ ->
+        btn_video_call.setOnClickListener {
             if (selectedContact != null) {
-                doVideoCall(selectedContact?.voiceCallId ?: 0)
+                doVideoCall(selectedContact?.videoCallId ?: 0)
             }
         }
 
-        btn_setting.setOnClickListener { _ ->
-            selectContact()
-        }
+        btn_setting.setOnClickListener { selectContact() }
 
     }
 

@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.dialog_manage_contact.*
 class ManageContactDialogFragment : DialogFragment() {
 
     private var manageContactListener: ManageContactListener? = null
+    private lateinit var selectedContact: Contact
 
     interface ManageContactListener {
         fun onInputValid(contact: Contact)
@@ -38,9 +39,8 @@ class ManageContactDialogFragment : DialogFragment() {
         dialog.setCancelable(false)
         activateListener(manageContactListener, dialog.dialog_btn_positive, dialog.dialog_btn_negative)
 
-        val contact: Contact? = arguments.getParcelable<Contact>(ARGS_CONTACT)
-        Log.d("Dialog", contact.toString())
-        bindContact(contact, dialog)
+        selectedContact = arguments.getParcelable<Contact>(ARGS_CONTACT)
+        bindContact(selectedContact, dialog)
         return dialog
     }
 
@@ -51,9 +51,9 @@ class ManageContactDialogFragment : DialogFragment() {
     }
 
     private fun activateListener(listener: ManageContactListener?, buttonPositive: Button, buttonNegative: Button) {
-        buttonNegative.setOnClickListener { _ -> dialog.dismiss() }
+        buttonNegative.setOnClickListener { dialog.dismiss() }
 
-        buttonPositive.setOnClickListener { _ ->
+        buttonPositive.setOnClickListener {
             if (isInputValid()) {
                 listener?.onInputValid(getContactData())
                 dialog.dismiss()
@@ -62,11 +62,10 @@ class ManageContactDialogFragment : DialogFragment() {
     }
 
     private fun getContactData(): Contact {
-        val contact = Contact()
-        contact.name = dialog.dialog_contact_name.text.toString()
-        contact.number = dialog.dialog_contact_num.text.toString()
-        contact.photoUrl = "http://picsum.photos/450/650/?image=1005"
-        return contact
+        selectedContact.name = dialog.dialog_contact_name.text.toString()
+        selectedContact.number = dialog.dialog_contact_num.text.toString()
+        selectedContact.photoUrl = "http://picsum.photos/450/650/?image=1005"
+        return selectedContact
     }
 
     fun setManageContactListener(listener: ManageContactListener) {
