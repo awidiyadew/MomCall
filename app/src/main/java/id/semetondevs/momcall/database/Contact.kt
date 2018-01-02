@@ -4,8 +4,10 @@ import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.Ignore
 import android.arch.persistence.room.PrimaryKey
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
+import java.io.File
 
 @Entity(tableName = "contact") 
 data class Contact(
@@ -18,6 +20,21 @@ data class Contact(
         var photoUrl: String?) : Parcelable {
 
     @Ignore constructor() : this(null, 0, 0, "", "", "", "")
+
+    fun getPhotoUri(): Uri? {
+        if (this.photo != null && !this.photo!!.isEmpty()) {
+            val photoFile = File(this.photo)
+            if (photoFile.exists()) {
+                return Uri.fromFile(photoFile)
+            }
+
+            return null
+        }
+
+        return null
+    }
+
+    fun isEditMode(): Boolean = this.id != null || this.id != 0L
 
     constructor(source: Parcel) : this(
             source.readValue(Long::class.java.classLoader) as Long?,

@@ -30,14 +30,20 @@ class MainActivity : AppCompatActivity() {
         private val RC_SELECT_CONTACT = 1
     }
 
-    private val cardStackAdapter: ContactAdapter by lazy { ContactAdapter(this) }
     private var selectedContact: Contact? = null
+    private var listContact: List<Contact>? = null
     val contactDb: ContactDatabase by lazy {
         Room.databaseBuilder(this, ContactDatabase::class.java, "contact_db")
             .allowMainThreadQueries()
             .build()
     }
-    private var listContact: List<Contact>? = null
+    private val cardStackAdapter: ContactAdapter by lazy {
+        ContactAdapter(this, object: ContactAdapter.ContactEditListener{
+            override fun onEditClick(contact: Contact) {
+                showManageContactDialog(contact)
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btn_setting.setOnClickListener { selectContact() }
+        btn_add_contact.setOnClickListener { selectContact() }
 
     }
 
@@ -104,7 +110,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onContactDeleteSuccess() {
-                Toast.makeText(this@MainActivity, "contact deleted", Toast.LENGTH_SHORT).show()
+                resetContactStack(card_stack_view, true)
+                Toast.makeText(this@MainActivity, "Contact deleted", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onUpdateContactSuccess() {
+                resetContactStack(card_stack_view, true)
+                Toast.makeText(this@MainActivity, "Update success!", Toast.LENGTH_SHORT).show()
             }
         })
         dialog.show(supportFragmentManager, "ManageContactDialogFragment")
@@ -149,13 +161,7 @@ class MainActivity : AppCompatActivity() {
         cardStackAdapter.notifyDataSetChanged()
 
         card.setCardEventListener(object : CardStackView.CardEventListener {
-            override fun onCardDragging(percentX: Float, percentY: Float) {
-                Log.d(TAG, "onCardDragging")
-            }
-
             override fun onCardSwiped(direction: SwipeDirection?) {
-                Log.d(TAG, "onCardSwiped top index ${card.topIndex}")
-
                 val selectedIdx = if (card.topIndex == listContact?.size) 0 else card.topIndex
                 setSelectedContact(listContact, selectedIdx)
 
@@ -164,18 +170,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onCardReversed() {
-                Log.d(TAG, "onCardReversed")
-            }
+            override fun onCardDragging(percentX: Float, percentY: Float) { }
 
-            override fun onCardMovedToOrigin() {
-                Log.d(TAG, "onCardMovedToOrigin")
-            }
+            override fun onCardReversed() { }
 
-            override fun onCardClicked(index: Int) {
-                Log.d(TAG, "onCardClicked pos = $index")
-                Toast.makeText(this@MainActivity, listContact!![index].name, Toast.LENGTH_SHORT).show()
-            }
+            override fun onCardMovedToOrigin() { }
+
+            override fun onCardClicked(index: Int) { }
         })
     }
 

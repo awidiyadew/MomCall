@@ -1,7 +1,6 @@
 package id.semetondevs.momcall
 
 import android.content.Context
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import id.semetondevs.momcall.database.Contact
-import java.io.File
 
 
-class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
+class ContactAdapter(context: Context, private val contactEditListener: ContactEditListener?) : ArrayAdapter<Contact>(context, 0) {
+
+    interface ContactEditListener {
+        fun onEditClick(contact: Contact)
+    }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val holder: ContactVH?
@@ -27,7 +29,7 @@ class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
             holder = view.tag as ContactVH
         }
 
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), contactEditListener)
         return view
     }
 
@@ -35,19 +37,25 @@ class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
         private val tvContactName: TextView = view.findViewById<TextView>(R.id.tv_contact_name) as TextView
         private val tvContactNum: TextView = view.findViewById<TextView>(R.id.tv_contact_number) as TextView
         private val ivContactPhoto: ImageView = view.findViewById<ImageView>(R.id.iv_contact_photo) as ImageView
+        private val btnEditContact: View = view.findViewById<View>(R.id.btn_edit_contact) as View
 
-        fun bind(contact: Contact) {
+        fun bind(contact: Contact, listener: ContactEditListener?) {
             tvContactName.text = contact.name
             tvContactNum.text = contact.number
 
-            if (contact.photo != null && !contact.photo!!.isEmpty()) {
-                val photoFile = File(contact.photo)
-                if (photoFile.exists()) {
-                    ivContactPhoto.setImageURI(Uri.fromFile(photoFile))
-                } else {
-                    ivContactPhoto.setImageResource(R.drawable.icn_nopicture)
-                }
+            if (contact.getPhotoUri() != null) {
+                val photoUri = contact.getPhotoUri()
+                ivContactPhoto.setImageURI(photoUri)
+            } else {
+                showNoPicture()
             }
+
+            btnEditContact.setOnClickListener { listener?.onEditClick(contact) }
+        }
+
+        private fun showNoPicture() {
+            ivContactPhoto.scaleType = ImageView.ScaleType.CENTER
+            ivContactPhoto.setImageResource(R.drawable.icn_nopicture)
         }
 
     }

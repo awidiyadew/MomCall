@@ -4,10 +4,10 @@ import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.arch.persistence.room.Room
 import android.content.Intent
-import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import android.util.Log
+import android.view.View
 import android.view.Window
 import android.widget.Button
 import android.widget.ImageView
@@ -40,10 +40,10 @@ class ManageContactDialogFragment : DialogFragment() {
     interface ManageContactListener {
         fun onSaveContactSuccess()
         fun onContactDeleteSuccess()
+        fun onUpdateContactSuccess()
     }
 
     companion object {
-        private val TAG = ManageContactDialogFragment::class.java.simpleName
         private val ARGS_CONTACT = "contact_args"
         val PHOTO_DIR = "contact_photos"
 
@@ -61,7 +61,11 @@ class ManageContactDialogFragment : DialogFragment() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_manage_contact)
         dialog.setCancelable(false)
-        activateListener(manageContactListener, dialog.dialog_btn_positive, dialog.dialog_btn_negative, dialog.iv_add_photo)
+        activateListener(manageContactListener,
+                dialog.dialog_btn_positive,
+                dialog.dialog_btn_negative,
+                dialog.btn_add_photo,
+                dialog.btn_delete_contact)
 
         selectedContact = arguments.getParcelable<Contact>(ARGS_CONTACT)
         bindContact(selectedContact, dialog)
@@ -76,9 +80,6 @@ class ManageContactDialogFragment : DialogFragment() {
 
         if (requestCode == EZPhotoPick.PHOTO_PICK_GALLERY_REQUEST_CODE
                 || requestCode == EZPhotoPick.PHOTO_PICK_CAMERA_REQUEST_CODE) {
-            val pickedPhoto = EZPhotoPickStorage(activity).loadLatestStoredPhotoBitmap()
-            setPhoto(dialog.iv_contact_photo, pickedPhoto)
-
             val photoName = data?.getStringExtra(EZPhotoPick.PICKED_PHOTO_NAME_KEY)
             val photoPath = EZPhotoPickStorage(activity).getAbsolutePathOfStoredPhoto(PHOTO_DIR, photoName)
             val photoFile = File(photoPath)
@@ -88,11 +89,12 @@ class ManageContactDialogFragment : DialogFragment() {
                 val newPhotoFile = moveFile(photoFile, outputDirectory, "${selectedContact.name.replace(" ","_")}.jpg")
                 if (newPhotoFile.exists()) {
                     this.photoPath = newPhotoFile.path
-                    Toast.makeText(activity, "saved in ${this.photoPath}", Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, "photo saved in ${this.photoPath}")
+                    setPhoto(dialog.iv_contact_photo, Uri.fromFile(newPhotoFile))
+                } else {
+                    Toast.makeText(activity, "Failed to add photo", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(activity, "photo doesn't exist", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, "Failed to add photo", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -117,33 +119,73 @@ class ManageContactDialogFragment : DialogFragment() {
 
     }
 
-    private fun setPhoto(imgView: ImageView, bitmap: Bitmap) {
+    private fun setPhoto(imgView: ImageView, photoUri: Uri) {
         imgView.scaleType = ImageView.ScaleType.CENTER_CROP
-        imgView.setImageBitmap(bitmap)
+        imgView.setImageURI(photoUri)
     }
 
     private fun bindContact(contact: Contact?, dialog: Dialog) {
         if (contact == null) return
         dialog.dialog_contact_name.setText(contact.name)
         dialog.dialog_contact_num.setText(contact.number)
+
+        if (contact.isEditMode()) {
+            photoPath = contact.photo
+            if (contact.getPhotoUri() != null) {
+                val photoUri = contact.getPhotoUri()
+                dialog.iv_contact_photo.setImageURI(photoUri)
+            }
+        }
     }
 
     private fun activateListener(listener: ManageContactListener?,
                                  buttonPositive: Button,
                                  buttonNegative: Button,
-                                 buttonAddPhoto: ImageView) {
+                                 buttonAddPhoto: View,
+                                 buttonDeleteContact: View) {
         buttonNegative.setOnClickListener { dialog.dismiss() }
 
         buttonPositive.setOnClickListener {
             if (isInputValid()) {
-                contactDb.contactDao()
-                        .saveContact(getContactData())
-                dialog.dismiss()
-                listener?.onSaveContactSuccess()
+                if (selectedContact.isEditMode()) {
+                    updateContact(contactDb, listener)
+                } else {
+                    saveContact(contactDb, listener)
+                }
             }
         }
 
         buttonAddPhoto.setOnClickListener { pickPhoto() }
+
+        buttonDeleteContact.setOnClickListener { deleteContact(contactDb, listener) }
+    }
+
+    private fun deleteContact(db: ContactDatabase, listener: ManageContactListener?) {
+        if (selectedContact.isEditMode()) {
+            db.contactDao().deleteContact(selectedContact)
+            dialog.dismiss()
+            listener?.onContactDeleteSuccess()
+        } else {
+            dialog.dismiss()
+        }
+    }
+
+    private fun updateContact(db: ContactDatabase, listener: ManageContactListener?) {
+        if (selectedContact.isEditMode()) {
+            db.contactDao()
+                    .updateContact(getContactData())
+            dialog.dismiss()
+            listener?.onUpdateContactSuccess()
+        }
+    }
+
+    private fun saveContact(db: ContactDatabase, listener: ManageContactListener?) {
+        if (selectedContact.isEditMode()) {
+            db.contactDao()
+                    .saveContact(getContactData())
+            dialog.dismiss()
+            listener?.onSaveContactSuccess()
+        }
     }
 
     private fun pickPhoto() {
