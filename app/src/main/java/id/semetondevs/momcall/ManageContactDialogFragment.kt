@@ -152,6 +152,8 @@ class ManageContactDialogFragment : DialogFragment() {
                 } else {
                     saveContact(contactDb, listener)
                 }
+            } else {
+                Toast.makeText(activity, "Input not valid or no image selected", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -180,7 +182,7 @@ class ManageContactDialogFragment : DialogFragment() {
     }
 
     private fun saveContact(db: ContactDatabase, listener: ManageContactListener?) {
-        if (selectedContact.isEditMode()) {
+        if (!selectedContact.isEditMode()) {
             db.contactDao()
                     .saveContact(getContactData())
             dialog.dismiss()

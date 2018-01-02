@@ -34,7 +34,11 @@ data class Contact(
         return null
     }
 
-    fun isEditMode(): Boolean = this.id != null || this.id != 0L
+    fun isEditMode(): Boolean {
+        if (this.id == null) return false
+        if (this.id == 0L) return false
+        return true
+    }
 
     constructor(source: Parcel) : this(
             source.readValue(Long::class.java.classLoader) as Long?,
