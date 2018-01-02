@@ -15,8 +15,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.yuyakaido.android.cardstackview.CardStackView
@@ -65,22 +63,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                selectContact()
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SELECT_CONTACT && resultCode == Activity.RESULT_OK) {
@@ -100,8 +82,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 showManageContactDialog(findWhatsAppContact)
             }
-        } else {
-            Toast.makeText(this, "Failed to select contact", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -118,11 +98,13 @@ class MainActivity : AppCompatActivity() {
     private fun showManageContactDialog(contact: Contact) {
         val dialog = ManageContactDialogFragment.newInstance(contact)
         dialog.setManageContactListener(object : ManageContactDialogFragment.ManageContactListener{
-            override fun onInputValid(contact: Contact) {
-                contactDb.contactDao()
-                        .saveContact(contact)
+            override fun onSaveContactSuccess() {
                 resetContactStack(card_stack_view, true)
                 Toast.makeText(this@MainActivity, "Save success!", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onContactDeleteSuccess() {
+                Toast.makeText(this@MainActivity, "contact deleted", Toast.LENGTH_SHORT).show()
             }
         })
         dialog.show(supportFragmentManager, "ManageContactDialogFragment")
@@ -141,23 +123,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "no contact found", Toast.LENGTH_SHORT).show()
     }
 
-    private fun setupDb(contactDb: ContactDatabase) {
-        contactDb.contactDao()
-                .saveContact(Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"))
-
-        contactDb.contactDao()
-                .getAllContact()
-                .forEach { Log.d(TAG, "got contact $it") }
-    }
-
     private fun getContacts(contactDb: ContactDatabase): List<Contact> {
-        /*return Arrays.asList(
-                Contact(1, 3305, 3306, "Made Awidiya", "085737546xxx", null, "http://picsum.photos/450/650/?image=1012"),
-                Contact(2, 1, 1, "Gede Mancung", "085737546xxx", null, "http://picsum.photos/450/650/?image=1027"),
-                Contact(3, 1, 2, "Komang Ganteng", "085737546xxx", null, "http://picsum.photos/450/650/?image=1005"),
-                Contact(4, 1, 2, "Ketut Gaul", "085737546xxx", null, "http://picsum.photos/450/650/?image=1010"),
-                Contact(5, 1, 2, "Wayan Mabuk", "085737546xxx", null, "http://picsum.photos/450/650/?image=1025"),
-                Contact(6, 1, 2, "Kadek Manis", "085737546xxx", null, "http://picsum.photos/450/650/?image=996"))*/
         return contactDb.contactDao().getAllContact()
     }
 

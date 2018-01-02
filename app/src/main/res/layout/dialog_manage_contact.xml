@@ -12,10 +12,28 @@
         android:minHeight="250dp"
         android:orientation="vertical">
 
-        <ImageView
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:src="@color/colorAccent"/>
+            android:layout_height="300dp">
+            <ImageView
+                android:id="@+id/iv_contact_photo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/icn_nopicture"
+                android:background="@color/colorPrimary"
+                android:scaleType="center"/>
+            <ImageView
+                android:id="@+id/iv_add_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:minHeight="45dp"
+                android:minWidth="45dp"
+                android:src="@drawable/ic_camera"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"/>
+        </RelativeLayout>
 
         <EditText
             android:id="@+id/dialog_contact_name"
@@ -34,9 +52,10 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:inputType="phone"
+            android:focusableInTouchMode="false"
+            android:clickable="false"
             android:hint="Contact Number"/>
 
     </LinearLayout>
@@ -56,6 +75,7 @@
             style="@style/Base.Widget.AppCompat.Button.Borderless"
             android:padding="8dp"
             android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             android:text="Cancel" />
 
         <Button
@@ -64,8 +84,8 @@
             android:layout_height="wrap_content"
             android:minWidth="64dp"
             style="@style/Base.Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/colorAccent"
             android:padding="8dp"
+            android:layout_marginEnd="8dp"
             android:text="Save" />
 
     </LinearLayout>

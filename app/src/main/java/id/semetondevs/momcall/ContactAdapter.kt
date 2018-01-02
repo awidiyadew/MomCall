@@ -1,14 +1,15 @@
 package id.semetondevs.momcall
 
 import android.content.Context
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.bumptech.glide.Glide
 import id.semetondevs.momcall.database.Contact
+import java.io.File
 
 
 class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
@@ -39,12 +40,16 @@ class ContactAdapter(context: Context) : ArrayAdapter<Contact>(context, 0) {
             tvContactName.text = contact.name
             tvContactNum.text = contact.number
 
-            if (contact.photoUrl != null) {
-                Glide.with(ivContactPhoto.context)
-                        .load(contact.photoUrl)
-                        .into(ivContactPhoto)
+            if (contact.photo != null && !contact.photo!!.isEmpty()) {
+                val photoFile = File(contact.photo)
+                if (photoFile.exists()) {
+                    ivContactPhoto.setImageURI(Uri.fromFile(photoFile))
+                } else {
+                    ivContactPhoto.setImageResource(R.drawable.icn_nopicture)
+                }
             }
         }
+
     }
 
 }

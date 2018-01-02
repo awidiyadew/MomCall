@@ -40,4 +40,5 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.4.0'
     implementation "android.arch.persistence.room:runtime:1.0.0"
     kapt "android.arch.persistence.room:compiler:1.0.0"
+    implementation 'com.siclo.ezphotopick:library:1.0.7'
 }
