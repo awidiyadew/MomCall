@@ -42,20 +42,8 @@ class ContactAdapter(context: Context, private val contactEditListener: ContactE
         fun bind(contact: Contact, listener: ContactEditListener?) {
             tvContactName.text = contact.name
             tvContactNum.text = contact.number
-
-            if (contact.getPhotoUri() != null) {
-                val photoUri = contact.getPhotoUri()
-                ivContactPhoto.setImageURI(photoUri)
-            } else {
-                showNoPicture()
-            }
-
             btnEditContact.setOnClickListener { listener?.onEditClick(contact) }
-        }
-
-        private fun showNoPicture() {
-            ivContactPhoto.scaleType = ImageView.ScaleType.CENTER
-            ivContactPhoto.setImageResource(R.drawable.icn_nopicture)
+            ivContactPhoto.loadFromPath(contact.photo, R.drawable.icn_nopicture)
         }
 
     }

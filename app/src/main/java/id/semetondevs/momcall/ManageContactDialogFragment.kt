@@ -20,10 +20,6 @@ import siclo.com.ezphotopicker.api.EZPhotoPickStorage
 import siclo.com.ezphotopicker.api.models.EZPhotoPickConfig
 import siclo.com.ezphotopicker.api.models.PhotoSource
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.nio.channels.FileChannel
 
 
 class ManageContactDialogFragment : DialogFragment() {
@@ -86,7 +82,8 @@ class ManageContactDialogFragment : DialogFragment() {
 
             if (photoFile.exists()) {
                 val outputDirectory = File(activity.applicationInfo.dataDir)
-                val newPhotoFile = moveFile(photoFile, outputDirectory, "${selectedContact.name.replace(" ","_")}.jpg")
+                val fileName = "${selectedContact.name.replace(" ","_")}.jpg"
+                val newPhotoFile = photoFile.moveFile(outputDirectory, fileName)
                 if (newPhotoFile.exists()) {
                     this.photoPath = newPhotoFile.path
                     setPhoto(dialog.iv_contact_photo, Uri.fromFile(newPhotoFile))
@@ -97,26 +94,6 @@ class ManageContactDialogFragment : DialogFragment() {
                 Toast.makeText(activity, "Failed to add photo", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    @Throws(IOException::class)
-    private fun moveFile(inputFile: File, outputDir: File, fileName: String): File {
-        val newFile = File(outputDir, fileName)
-        var outputChannel: FileChannel? = null
-        var inputChannel: FileChannel? = null
-        try {
-            outputChannel = FileOutputStream(newFile).channel
-            inputChannel = FileInputStream(inputFile).channel
-            inputChannel.transferTo(0, inputChannel.size(), outputChannel)
-            inputChannel.close()
-            inputFile.delete()
-        } finally {
-            if (inputChannel != null) inputChannel.close()
-            if (outputChannel != null) outputChannel.close()
-        }
-
-        return newFile
-
     }
 
     private fun setPhoto(imgView: ImageView, photoUri: Uri) {
@@ -130,11 +107,7 @@ class ManageContactDialogFragment : DialogFragment() {
         dialog.dialog_contact_num.setText(contact.number)
 
         if (contact.isEditMode()) {
-            photoPath = contact.photo
-            if (contact.getPhotoUri() != null) {
-                val photoUri = contact.getPhotoUri()
-                dialog.iv_contact_photo.setImageURI(photoUri)
-            }
+            dialog.iv_contact_photo.loadFromPath(contact.photo, R.drawable.icn_nopicture)
         }
     }
 
