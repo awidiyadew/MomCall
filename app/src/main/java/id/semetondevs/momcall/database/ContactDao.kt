@@ -17,4 +17,7 @@ import android.arch.persistence.room.OnConflictStrategy.REPLACE
     @Update(onConflict = REPLACE)
     fun updateContact(contact: Contact)
 
+    @Query("SELECT * FROM contact WHERE number = :number")
+    fun getContact(number: String): Contact?
+
 }

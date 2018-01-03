@@ -123,7 +123,11 @@ class ManageContactDialogFragment : DialogFragment() {
                 if (selectedContact.isEditMode()) {
                     updateContact(contactDb, listener)
                 } else {
-                    saveContact(contactDb, listener)
+                    if (isContactExist(contactDb)) {
+                        Toast.makeText(activity, "Contact already exist!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        saveContact(contactDb, listener)
+                    }
                 }
             } else {
                 Toast.makeText(activity, "Input not valid or no image selected", Toast.LENGTH_SHORT).show()
@@ -161,6 +165,11 @@ class ManageContactDialogFragment : DialogFragment() {
             dialog.dismiss()
             listener?.onSaveContactSuccess()
         }
+    }
+
+    private fun isContactExist(db: ContactDatabase): Boolean {
+        val contactInDb = db.contactDao().getContact(selectedContact.number)
+        return contactInDb != null
     }
 
     private fun pickPhoto() {
