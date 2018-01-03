@@ -83,8 +83,8 @@ class ManageContactDialogFragment : DialogFragment() {
             if (photoFile.exists()) {
                 val outputDirectory = File(activity.applicationInfo.dataDir)
                 val fileName = "${selectedContact.name.replace(" ","_")}.jpg"
-                val newPhotoFile = photoFile.moveFile(outputDirectory, fileName)
-                if (newPhotoFile.exists()) {
+                val newPhotoFile = photoFile.compressImageFile(outputDirectory, fileName, 60)
+                if (newPhotoFile != null) {
                     this.photoPath = newPhotoFile.path
                     setPhoto(dialog.iv_contact_photo, Uri.fromFile(newPhotoFile))
                 } else {

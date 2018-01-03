@@ -17,7 +17,7 @@
             android:id="@+id/iv_contact_photo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
+            android:scaleType="center"
             android:src="@drawable/icn_nopicture"
             android:background="@color/colorPrimaryTransparent"
             android:layout_above="@id/profile"/>

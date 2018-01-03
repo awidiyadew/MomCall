@@ -1,5 +1,7 @@
 package id.semetondevs.momcall
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.support.annotation.DrawableRes
 import android.widget.ImageView
@@ -24,6 +26,7 @@ fun ImageView.loadFromPath(filePath: String?, @DrawableRes errorDrawable: Int, a
         streamGetUri.subscribeOn(doInThread)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
+                    this.scaleType = ImageView.ScaleType.CENTER_CROP
                     this.setImageURI(it)
                 },{
                     loadErrorImage(errorDrawable)
@@ -57,4 +60,26 @@ fun File.moveFile(outputDir: File, fileName: String): File {
     return newFile
 }
 
+fun File.compressImageFile(outputDir: File, fileName: String, compressQuality: Int = 70, scaleQuality: Int = 50): File? {
+    // get bitmap from original file
+    val fis = FileInputStream(this)
+    val originalBitmap = BitmapFactory.decodeStream(fis)
+    fis.close()
 
+    val outputFile = File(outputDir, fileName)
+    val fos = FileOutputStream(outputFile)
+    val scaledWidth = originalBitmap.width * scaleQuality/100
+    val scaledHeight = originalBitmap.height * scaleQuality/100
+    val scaledBitmap = Bitmap.createScaledBitmap(
+            originalBitmap,
+            scaledWidth,
+            scaledHeight,
+            true)
+    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, compressQuality, fos)
+    fos.close()
+
+    if (!originalBitmap.isRecycled) originalBitmap.recycle()
+    if (!scaledBitmap.isRecycled) scaledBitmap.recycle()
+
+    return if (outputFile.exists()) outputFile else null
+}
